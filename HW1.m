@@ -1,6 +1,4 @@
-h=.01;
-[X,Y] = meshgrid(0:h:1,0:h:1);
-surf(X,Y, GS(h, 10000,1))
+
 CalcError(1)
 
 %Calculate the analytical solution for step size h
@@ -56,20 +54,20 @@ end
 
 %compare the error in the infinity norm 
 function error = CalcError(fun)
-    hval = [1/25, 1/100, 1/200, 1/250];%, 1/400, 1/500, 1/625];
-    mvec = [25, 100, 200, 250];%, 400, 500, 625];
+    hval = [1/25, 1/100, 1/250];%, 1/400, 1/500, 1/625];
+    mvec = [25, 100, 250];%, 400, 500, 625];
     evec = zeros(size(hval));
     if fun == 1
         analytical = GS(1/500, 100000, 1);
         size(analytical)
-        for counter = 1:4
-            split = int(500/mvec(counter))
+        for counter = 1:3
+            split = int32(500/mvec(counter))
             NewAnalytical = analytical(1:split:501, 1:split:501);
-            errorMtx = abs(GS(hval(counter),(mvec(counter))^2, fun)-NewAnalytical(hval(counter)));
+            errorMtx = abs(GS(hval(counter),(mvec(counter))^2, fun)-NewAnalytical);
             evec(counter) = max(max(errorMtx))
         end
     else
-        for counter = 1:4
+        for counter = 1:3
             errorMtx = abs(GS(hval(counter),(mvec(counter))^2, fun)-Analytical(hval(counter)));
             evec(counter) = max(max(errorMtx))
         end

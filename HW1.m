@@ -1,17 +1,10 @@
-h = .01;
-Z = GS(h, 10000);
+h=.01;
 [X,Y] = meshgrid(0:h:1,0:h:1);
-solution = Analytical(h);
-subplot(1,3, 1)
-surf(X, Y, solution)
-subplot(1,3,2)
-surf(X,Y,Z)
-subplot(1,3,3)
-error = abs(Z-solution);
-surf(X,Y,error)
-max(max(error))
-CalcError(1000000)
+surf(X,Y, GS(h, 10000,1))
+CalcError(1)
 
+%Calculate the analytical solution for step size h
+%in both the x and y directions
 function soltn = Analytical(h)
     m = int32(1/h);
     soltn = zeros(m+1);
@@ -26,36 +19,62 @@ function soltn = Analytical(h)
     end
 end
 
-function u = GS(h, maxiter)
+
+%use maxiter iterations of Gauss-Seidel with step size h
+%to approximate the solution
+%if fun is not equal to 1, we have our cos(2pi*y) boundary condition
+%if fun = 1 we have our sign function boundary condition
+function u = GS(h, maxiter, fun)
     m = int32(1/h);
+    %initialize a guess that fits the boundary conditions
+    %and is all zeros elsewhere
     u = zeros(m+1);
     for l = 1:(m+1)
-        u(l,1) = cos(2*pi*single(m-l+1)*h);
+        u(l,1) = cos(2*pi*double(m-l+1)*h);
+        if fun == 1
+            u(l,1) = sign(u(l,1));
+        end
     end
     u(:,m+1) = 0;
+    %use the Gauss-Seidel algorithm
     for iter = 0:maxiter
-        for j = 2:(m)
-            for i = 2:(m)
+        for n = 2:m
+            u(1,n) = 1/4*(2*u(2,n)+u(1,n-1)+u(1,n+1));
+        end
+        for j = 2:m
+            for i = 2:m
                 u(i,j) = 0.25 * (u(i-1,j) + u(i+1,j) + u(i,j-1) + u(i,j+1));
             end
         end
-        for n = 2:m+1
-            u(1,n) = u(2,n);
-            u(m+1,n) = u(m,n);
+        for n = 2:m
+            u(m+1,n) = 1/4*(2*u(m,n)+u(m+1, n-1)+u(m+1,n+1));
         end
     end
+    size(u)
 end
 
-function error = CalcError(maxiter)
-    evec = zeros(1, 8);
-    hvec = zeros(1, 8);
-    hval = [.05, .025, .02, .01, .005, .004, .0025, .002];
-    for counter = 1:8
-        hvec(counter) = hval(counter);
-        errorMtx = abs(GS(hval(counter),maxiter)-Analytical(hval(counter)));
-        evec(counter) = max(max(errorMtx))
+
+%compare the error in the infinity norm 
+function error = CalcError(fun)
+    hval = [1/25, 1/100, 1/200, 1/250];%, 1/400, 1/500, 1/625];
+    mvec = [25, 100, 200, 250];%, 400, 500, 625];
+    evec = zeros(size(hval));
+    if fun == 1
+        analytical = GS(1/500, 100000, 1);
+        size(analytical)
+        for counter = 1:4
+            split = int(500/mvec(counter))
+            NewAnalytical = analytical(1:split:501, 1:split:501);
+            errorMtx = abs(GS(hval(counter),(mvec(counter))^2, fun)-NewAnalytical(hval(counter)));
+            evec(counter) = max(max(errorMtx))
+        end
+    else
+        for counter = 1:4
+            errorMtx = abs(GS(hval(counter),(mvec(counter))^2, fun)-Analytical(hval(counter)));
+            evec(counter) = max(max(errorMtx))
+        end
     end
-    hvec = log(hvec)
+    hval = log(hval)
     evec = log(evec)
-    plot(hvec,evec)
+    plot(hval,evec)
 end

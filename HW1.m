@@ -1,5 +1,4 @@
-
-CalcError(1)
+multigrid(1/250)
 
 %Calculate the analytical solution for step size h
 %in both the x and y directions
@@ -75,4 +74,29 @@ function error = CalcError(fun)
     hval = log(hval)
     evec = log(evec)
     plot(hval,evec)
+end
+
+function u = relaxedJacobi(h, iterations)
+    m = int32(1/h);
+    %initialize a guess that fits the boundary conditions
+    %and is all zeros elsewhere
+    u = zeros(m+1);
+    for l = 1:(m+1)
+        u(l,1) = cos(2*pi*double(m-l+1)*h);
+        if fun == 1
+            u(l,1) = sign(u(l,1));
+        end
+    end
+    u(:,m+1) = 0;
+    for iter = 0:iterations
+        for j=2:m
+            for i = 2:m
+                unew(i,j)=(1/5)*u(i,j)+(4/5)*.25(u(i-1,j)+u(i+1,j)+u(i,j-1)+u(i,j+1));
+            end
+        end
+        for n = 2:m
+            unew(m+1,n) = 1/4*(2*u(m,n)+u(m+1, n-1)+u(m+1,n+1));
+        end
+        u = unew;
+    end
 end

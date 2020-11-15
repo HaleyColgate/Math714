@@ -3,7 +3,7 @@
 error()
 
 
-%%%CALCULATES THE ERROR USING N=256 AS THE 'TRUE SOLUTION' AND PLOTS IT
+%%%CALCULATES THE ERROR USING N=128 AS THE 'TRUE SOLUTION' AND PLOTS IT
 %%%USING A LOG-LOG PLOT OF THE SPACIAL DIFFERENCE AND THE ERROR
 function errs = error()
     T = 1;
@@ -11,7 +11,7 @@ function errs = error()
     dt = 1/N*.1;
     fineGrid = solve(N);
     fineGrid = fineGrid(:,:,end);
-    Nvals = [32, 64];
+    Nvals = [16, 32, 64];
     errs = zeros(size(Nvals));
     hs = zeros(size(Nvals));
     for i = 1:size(Nvals,2)
@@ -44,7 +44,6 @@ function solution = solve(N)
     
     %the first step
     vvnew = vvold + dt*v0 + .5*dt^2*laplacian(vvold, N, x, y) + (1/6)*dt^3*laplacian(v0, N, x, y);
-    vvold = vv;
     vv = vvnew;
     %surf(x,y,vvnew)
     %pause(0.01)

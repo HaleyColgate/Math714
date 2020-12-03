@@ -36,6 +36,8 @@ class MDP:
         for j in range(len(self.params[1])):
             if rewardProbs[j] >= rewardRandom:
                 self.total[0] += self.params[1][j]
+                if self.total[0] == 2:
+                    print('error!!!', self.state)
                 self.total[1] = self.params[1][j]
                 break
         self.updateTermination()
@@ -46,3 +48,26 @@ class MDP:
         if self.check(self) == True:
             self.terminated = True
             #print('Ended Episode')
+
+def endpointCheck(mdp):
+    return mdp.state == 0 or mdp.state == 6
+        
+
+####INITIALIZE MDP FROM SUTTON AND BARTO
+ex6dot2 = MDP(numStates = 7, 
+            rewards = (0,1), 
+            checkF = endpointCheck, 
+            leftTrans = ((1,0,0,0,0,0,0), (1,0,0,0,0,0,0), (0,1,1,1,1,1,1), (0,0,1,1,1,1,1), (0,0,0,1,1,1,1), (0,0,0,0,1,1,1), (0,0,0,0,0,0,1)),
+            rightTrans = ((1,1,1,1,1,1,1), (0,0,1,1,1,1,1,1), (0,0,0,1,1,1,1), (0,0,0,0,1,1,1), (0,0,0,0,0,1,1), (0,0,0,0,0,0,1), (0,0,0,0,0,0,1)),
+            leftReward = ((1,1),(1,1),(1,1),(1,1),(1,1),(1,1),(1,1)), 
+            rightReward = ((1,1), (1,1), (1,1), (1,1), (1,1), (0,1),(1,1)),
+            gamma = 1
+            )
+
+def initialize(mdp):
+    vals = []
+    vals.append(0)
+    for s in range(1,mdp.params[0]-1):
+        vals.append(0.5)
+    vals.append(0)
+    return vals

@@ -4,6 +4,40 @@ import MonteCarlo as MC
 import random as rand
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
+import numpy as np
+
+def compareMCwithTD(mdp, initial, episodes, stepSize, runs):
+    true = [1/6, 2/6, 3/6, 4/6, 5/6]
+    MCerrors = [[0,0,0,0,0] for i in range(episodes)]
+    TDerrors = [[0,0,0,0,0] for i in range(episodes)]
+    xVals = [i+1 for i in range(episodes)]
+    for i in range(runs):
+        MCvals = MC.MonteCarloevery(mdp, initial.copy(), episodes, stepSize)
+        TDvals = TD.TD0every(mdp, initial.copy(), episodes, stepSize)
+        for j in range(episodes):
+            for k in range(len(MCvals[0])):
+                MCerrors[j][k] += ((MCvals[j][k]-true[k])**2)
+                TDerrors[j][k] += ((TDvals[j][k]-true[k])**2)
+    MCerrs = []
+    TDerrs = []
+    for i in range(episodes):
+        totalOfMCErrs = 0
+        totalOfTDErrs = 0
+        for state in range(len(MCvals[0])):
+            totalOfMCErrs += np.sqrt(MCerrors[i][state]/runs)
+            totalOfTDErrs += np.sqrt(TDerrors[i][state]/runs)
+        MCerrs.append(totalOfMCErrs/len(MCvals[0]))
+        TDerrs.append(totalOfTDErrs/len(TDvals[0]))
+    blue_patch = mpatches.Patch(color='blue', label = 'TD(0) errors')
+    red_patch = mpatches.Patch(color='red', label = 'MC errors')
+    plt.plot(xVals, TDerrs, 'b-',
+             xVals, MCerrs, 'r-')
+    plt.ylabel('Root Mean-squared Error ')
+    plt.xlabel('Number of Episodes')
+    plt.legend(handles=[blue_patch, red_patch])
+    plt.title('Comparison of Error with MC vs TD(0)')
+    plt.show()
+    
 
 def episodeComp(mdp, initial, stepSize, method):
     if method == MC.MonteCarlo:
@@ -58,7 +92,7 @@ def stepSizeComp(mdp, initial, numEpisodes, method):
 def main():
     mdp = MDP.ex6dot2
     initial = MDP.initialize(mdp)
-    stepSizeComp(mdp, initial, 100, TD.TD0)
+    #stepSizeComp(mdp, initial, 100, TD.TD0)
     #episodeComp(mdp, initial, .1, TD.TD0)
-    #MC.MonteCarlo(mdp, initial, 500, .5)
+    compareMCwithTD(mdp, initial.copy(), 100, .1, 100)
 main()

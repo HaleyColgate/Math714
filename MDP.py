@@ -71,3 +71,5 @@ def initialize(mdp):
         vals.append(0.5)
     vals.append(0)
     return vals
+
+print(initialize(ex6dot2))

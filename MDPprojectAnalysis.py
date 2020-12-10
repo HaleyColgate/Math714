@@ -6,6 +6,10 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 import numpy as np
 
+'''
+This file contains the functions that compute mean squared error and generate the graphs.
+'''
+
 def compareMCwithTD(mdp, initial, episodes, runs):
     true = [1/6, 2/6, 3/6, 4/6, 5/6]
     MCerrors = [[0,0,0,0,0] for i in range(episodes)]
@@ -50,38 +54,38 @@ def compareMCwithTD(mdp, initial, episodes, runs):
     plt.show()
     
 
-def episodeComp(mdp, initial, stepSize, method):
-    if method == MC.MonteCarlo:
+def episodeComp(mdp, initial, episodes, stepSize, method, runs):
+    if method == MC.MonteCarloevery:
         nameMethod = 'Monte Carlo'
     else:
         nameMethod = 'TD(0)'
     true = [1/6, 2/6, 3/6, 4/6, 5/6]
-    estimates = []
-    numEpisodes = [10, 25, 50,75]
-    letters = ['A', 'B', 'C', 'D', 'E']
-    for i in numEpisodes:
-        estimates.append(method(mdp, initial, i, stepSize))
-
+    errors = [[0,0,0,0,0] for i in range(episodes)]
+    xVals = [i+1 for i in range(episodes)]
+    for i in range(runs):
+        vals = method(mdp, initial.copy(), episodes, stepSize)
+        for j in range(episodes):
+            for k in range(len(vals[0])):
+                errors[j][k] += ((vals[j][k]-true[k])**2)
+    errs = []
+    for i in range(episodes):
+        totalOfErrs = 0
+        for state in range(len(vals[0])):
+            totalOfErrs += np.sqrt(errors[i][state]/runs)
+        errs.append(totalOfErrs/len(vals[0]))
     plt.style.use('seaborn-darkgrid')
     palette = plt.get_cmap('Set1')
     color = 0
-    plt.plot(letters, true, 'k-', label = 'True values', linewidth = 4)
-    for x in numEpisodes:
-        label0 = str(x) + ' episodes'
-        plt.plot(letters, estimates[color], 'o-', label = label0, color=palette(color), linewidth=1)
-        color += 1
-    plt.ylabel('Estimated Value')
-    plt.xlabel('State')
-    plt.legend()
-    plt.title('Analysis of Number of Episodes for ' + nameMethod)
+    plt.plot(xVals, errs, '-', color=palette(color))
+    plt.ylabel('Root Mean-squared Error ')
+    plt.xlabel('Number of Episodes')
+    plt.title('Effect of Increasing Number of Episodes on Error of '+nameMethod)
     plt.show()
     
 def stepSizeComp(mdp, initial, method):
     true = [1/6, 2/6, 3/6, 4/6, 5/6]
-    estimates = []
     runs = 100
     stepSizes = np.arange(.005, .2, 0.005).tolist()
-    letters = ['A', 'B', 'C', 'D', 'E']
     numEpisodes = [25, 50, 100, 250, 500, 1000]
         
     xVals = stepSizes
@@ -112,11 +116,90 @@ def stepSizeComp(mdp, initial, method):
     plt.title('Analysis of Step Size for TD(0)')
     plt.legend()
     plt.show()
+    
+def numEpisodesVsStepSize(mdp, initial):
+    episodes = 1000
+    stepSizes = np.arange(.05, .2, 0.005).tolist()
+
+    true = [1/6, 2/6, 3/6, 4/6, 5/6]
+    runs = 100
+        
+    xVals = stepSizes
+    epps = []
+    
+    plt.style.use('seaborn-darkgrid')
+    palette = plt.get_cmap('Set1')
+    color = 0
+    
+    for stepSize in stepSizes:
+        minError = 1
+        optimalEpisode = 1
+        color += 1
+        TDerrors = [[0,0,0,0,0] for i in range(episodes)]
+        for i in range(runs):
+            TDvals = TD.TD0every(mdp, initial.copy(), episodes, stepSize)
+            for j in range(episodes):
+                for k in range(len(TDvals[0])):
+                    TDerrors[j][k] += ((TDvals[j][k]-true[k])**2)
+        for i in range(episodes):
+            totalOfTDErrs = 0
+            for state in range(len(TDvals[0])):
+                totalOfTDErrs += np.sqrt(TDerrors[i][state]/runs)
+            if totalOfTDErrs/len(TDvals[0]) < minError:
+                minError = totalOfTDErrs/len(TDvals[0])
+                optimalEpisode = i
+        epps.append(optimalEpisode)
+        
+    plt.plot(xVals, epps, '-', color=palette(color))
+    plt.ylabel('Number of Episodes to Minimize Error')
+    plt.xlabel('Step Size')
+    plt.title('Step Size vs Number of Episodes, TD(0)')
+    plt.show()
+    
+def minErrorVsStepSize(mdp, initial):
+    episodes = 1000
+    stepSizes = np.arange(.05, .2, 0.005).tolist()
+
+    true = [1/6, 2/6, 3/6, 4/6, 5/6]
+    runs = 100
+        
+    xVals = stepSizes
+    minErrs = []
+    
+    plt.style.use('seaborn-darkgrid')
+    palette = plt.get_cmap('Set1')
+    color = 0
+    
+    for stepSize in stepSizes:
+        minError = 1
+        optimalEpisode = 1
+        color += 1
+        TDerrors = [[0,0,0,0,0] for i in range(episodes)]
+        for i in range(runs):
+            TDvals = TD.TD0every(mdp, initial.copy(), episodes, stepSize)
+            for j in range(episodes):
+                for k in range(len(TDvals[0])):
+                    TDerrors[j][k] += ((TDvals[j][k]-true[k])**2)
+        for i in range(episodes):
+            totalOfTDErrs = 0
+            for state in range(len(TDvals[0])):
+                totalOfTDErrs += np.sqrt(TDerrors[i][state]/runs)
+            if totalOfTDErrs/len(TDvals[0]) < minError:
+                minError = totalOfTDErrs/len(TDvals[0])
+                optimalEpisode = i
+        minErrs.append(minError)
+        
+    plt.plot(xVals, minErrs, '-', color=palette(color))
+    plt.ylabel('Minimal Error')
+    plt.xlabel('Step Size')
+    plt.title('Step Size vs Minimal Error, TD(0)')
+    plt.show()
           
 def main():
     mdp = MDP.ex6dot2
     initial = MDP.initialize(mdp)
+    minErrorVsStepSize(mdp, initial)
     #stepSizeComp(mdp, initial, TD.TD0)
-    #episodeComp(mdp, initial, .1, TD.TD0)
-    compareMCwithTD(mdp, initial.copy(), 350, 100)
+    #episodeComp(mdp, initial, 150, .1, MC.MonteCarloevery, 100)
+    #compareMCwithTD(mdp, initial.copy(), 350, 100)
 main()

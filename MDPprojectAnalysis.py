@@ -14,6 +14,10 @@ def compareMCwithTD(mdp, initial, episodes, runs):
     true = [1/6, 2/6, 3/6, 4/6, 5/6]
     MCerrors = [[0,0,0,0,0] for i in range(episodes)]
     xVals = [i+1 for i in range(episodes)]
+    plt.style.use('seaborn-darkgrid')
+    palette = plt.get_cmap('Set1')
+    color = 0
+    
     stepSize = 0
     for i in range(runs):
         MCvals = MC.MonteCarloevery(mdp, initial.copy(), episodes, stepSize)
@@ -26,9 +30,7 @@ def compareMCwithTD(mdp, initial, episodes, runs):
         for state in range(len(MCvals[0])):
             totalOfMCErrs += np.sqrt(MCerrors[i][state]/runs)
         MCerrs.append(totalOfMCErrs/len(MCvals[0]))
-    plt.style.use('seaborn-darkgrid')
-    palette = plt.get_cmap('Set1')
-    color = 0
+    
     plt.plot(xVals, MCerrs, '-', label = 'MC error', color=palette(color))
     
     for stepSize in [.1, .05]:
@@ -61,7 +63,7 @@ def episodeComp(mdp, initial, episodes, stepSize, method, runs):
         nameMethod = 'TD(0)'
     true = [1/6, 2/6, 3/6, 4/6, 5/6]
     errors = [[0,0,0,0,0] for i in range(episodes)]
-    xVals = [i+1 for i in range(episodes)]
+    xVals = [np.log(i+1) for i in range(episodes)]
     for i in range(runs):
         vals = method(mdp, initial.copy(), episodes, stepSize)
         for j in range(episodes):
@@ -72,14 +74,14 @@ def episodeComp(mdp, initial, episodes, stepSize, method, runs):
         totalOfErrs = 0
         for state in range(len(vals[0])):
             totalOfErrs += np.sqrt(errors[i][state]/runs)
-        errs.append(totalOfErrs/len(vals[0]))
+        errs.append(np.log(totalOfErrs/len(vals[0])))
     plt.style.use('seaborn-darkgrid')
     palette = plt.get_cmap('Set1')
     color = 0
     plt.plot(xVals, errs, '-', color=palette(color))
-    plt.ylabel('Root Mean-squared Error ')
-    plt.xlabel('Number of Episodes')
-    plt.title('Effect of Increasing Number of Episodes on Error of '+nameMethod)
+    plt.ylabel('Log of Root Mean-squared Error ')
+    plt.xlabel('Log of Number of Episodes')
+    plt.title('Number of Episodes vs Error of '+nameMethod)
     plt.show()
     
 def stepSizeComp(mdp, initial, method):
@@ -198,8 +200,8 @@ def minErrorVsStepSize(mdp, initial):
 def main():
     mdp = MDP.ex6dot2
     initial = MDP.initialize(mdp)
-    minErrorVsStepSize(mdp, initial)
+    #minErrorVsStepSize(mdp, initial)
     #stepSizeComp(mdp, initial, TD.TD0)
-    #episodeComp(mdp, initial, 150, .1, MC.MonteCarloevery, 100)
+    episodeComp(mdp, initial, 200, .1, MC.MonteCarloevery, 100)
     #compareMCwithTD(mdp, initial.copy(), 350, 100)
 main()

@@ -1,6 +1,10 @@
 from MDP import MDP
 import random as rand
         
+#sets up TD0 algorithm
+#inputs: mdp from MDP class, initial value function, the number of episodes to include, and the step stepSize
+#returns value function for states 1-5
+
 def TD0(mdp, vals, numEpisodes, stepSize):
     for episode in range(numEpisodes):
         mdp.total = [0,0]
@@ -15,7 +19,7 @@ def TD0(mdp, vals, numEpisodes, stepSize):
     vals = vals[1:-1]
     return vals
     
-#same as above but saves estimate after every episode
+#same as above but saves estimate after every episode, useful for computing root mean squared error later
 def TD0every(mdp, vals, numEpisodes, stepSize):
     allVals = []
     for episode in range(numEpisodes):

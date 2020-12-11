@@ -1,5 +1,8 @@
 import random as rand
 
+#This class establishes the MDP framework, including a function that allows for interaction with the MDP and a way to check when an episode terminates
+#later this file establishes the MDP from Sutton and Barto worked with in my report, and a way to initialize a neutral value function
+
 class MDP:
 
     def __init__(self, numStates, rewards, checkF, leftTrans, rightTrans, leftReward, rightReward, gamma=1, solution = None):
@@ -64,6 +67,7 @@ ex6dot2 = MDP(numStates = 7,
             gamma = 1
             )
 
+#sets up a neutral value function that is zero for the left and right endpoints
 def initialize(mdp):
     vals = []
     vals.append(0)
@@ -71,5 +75,3 @@ def initialize(mdp):
         vals.append(0.5)
     vals.append(0)
     return vals
-
-print(initialize(ex6dot2))

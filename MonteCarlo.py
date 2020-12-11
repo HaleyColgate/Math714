@@ -1,6 +1,11 @@
 import MDP as MDP
 import random as rand
 
+#sets up MC algorithm
+#inputs: mdp from mdp class, initial value function, number of episodes to include, step stepSize
+#note: initial value function gets redefined and stepSize never gets used, but it was convenient to have TD(0) and MC have the same inputs
+#output: value function for states 1-5
+
 def MonteCarlo(mdp, vals, numEpisodes, stepSize):
     for i in range(len(vals)):
         vals[i] = [0]
